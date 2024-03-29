@@ -1,0 +1,52 @@
+version: '3'
+
+services:  
+  db:
+    image: mysql:5.7
+    command: --innodb-use-native-aio=0
+    container_name: db
+    restart: always
+    tty: true
+    volumes: 
+      - ./src/mysql:/var/lib/mysql
+    environment: 
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+    networks: 
+      - node-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+
+  app:
+    build: 
+      context: ./
+      dockerfile: Dockerfile.node
+    container_name: app
+    networks: 
+      - node-network
+    volumes: 
+      - ./src:/usr/src/app
+    tty: true
+    depends_on: 
+       db:
+        condition: service_healthy
+
+  nginx:
+    build:
+      context: ./
+      dockerfile: Dockerfile.nginx
+    container_name: nginx
+    networks: 
+      - node-network
+    ports: 
+      - "8080:80"
+    depends_on: 
+      - app
+
+
+networks: 
+  node-network:
+    driver: bridge    

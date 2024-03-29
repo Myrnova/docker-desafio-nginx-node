@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "express": "^4.19.2",
+    "unique-names-generator": "^4.7.1",
+    "mysql-await": "^2.2.3"
+  }
+}
